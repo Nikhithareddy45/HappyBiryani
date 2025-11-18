@@ -4,13 +4,19 @@
 node_modules/
 
 # Expo
+.vscode/
 .expo/
+node_modules/
+.DS_Store
+*.log
+temp/
 dist/
 web-build/
 expo-env.d.ts
 
 # Native
 .kotlin/
+
 *.orig.*
 *.jks
 *.p8
