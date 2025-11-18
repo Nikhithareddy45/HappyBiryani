@@ -24,7 +24,6 @@ export const StoreCard: React.FC<StoreCardProps> = ({
   const distance = userLatitude && userLongitude
     ? calculateDistance(userLatitude, userLongitude, latitude, longitude)
     : null;
-  console.log(distance)
   const handleNavigateToLocation = async () => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
     try {
