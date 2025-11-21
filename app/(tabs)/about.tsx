@@ -15,7 +15,7 @@ const About = () => {
           <Text className="text-2xl font-bold text-primary">About Us</Text>
         </View>
         <Image
-          source={require("@/assets/images/about.png")}
+          source={require("@/assets/images/about.jpg")}
           className="rounded-2xl"
           style={{ width: "100%", height: 220 }}
           resizeMode="cover"
