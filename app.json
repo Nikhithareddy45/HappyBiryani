@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.nikhithareddy.HappyBiryani"
+      "package": "com.HappyBiryani"
     },
     "web": {
       "bundler": "metro",
