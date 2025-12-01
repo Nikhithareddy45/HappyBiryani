@@ -45,12 +45,12 @@ export default function LocationPermissionScreen() {
       </View>
 
       <View className="items-center mb-8">
-        <View className="flex-row items-center mb-4">
+        <View className="flex-row items-center mb-2">
           <Text className="text-3xl">📍</Text>
           <Text className="text-2xl font-bold text-gray-800">Enable Location</Text>
         </View>
+      <Text className="text-md text-gray-800 text-center">Allow location access to find the nearest HappyBiryani Stores</Text>
       </View>
-
       <Button
         title="Allow Location"
         onPress={handleAllowLocation}
