@@ -11,6 +11,7 @@ import { CarouselSkeleton, HeadingSkeleton, StoreCardSkeleton } from "@/componen
 import { getBanners, getStores } from "@/services/api";
 import { Banner, Store } from "@/types/common";
 import { shuffleArray, sortStoresByDistance } from "@/utils/location";
+import { Dimensions } from 'react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -44,9 +45,8 @@ export default function HomeScreen() {
 
       if (result.length > 0) {
         const a = result[0];
-        const fullAddress = `${a.street || ""} ${a.name || ""}, ${a.district || a.subregion || ""}, ${
-          a.city || a.region || ""
-        }`;
+        const fullAddress = `${a.street || ""} ${a.name || ""}, ${a.district || a.subregion || ""}, ${a.city || a.region || ""
+          }`;
         setAddress(fullAddress);
       }
     } catch (err) {
@@ -54,9 +54,8 @@ export default function HomeScreen() {
     }
   };
 
-  // ------------------------
-  // LOAD DATA
-  // ------------------------
+  const screenWidth = Dimensions.get('window').width;
+  const cardWidth = screenWidth * 0.85;
   const loadData = async (isRefresh: boolean) => {
     try {
       if (!isRefresh) setLoading(true);
@@ -88,10 +87,6 @@ export default function HomeScreen() {
     setRefreshing(true);
     loadData(true);
   };
-
-  // ------------------------
-  // LOADING SKELETONS
-  // ------------------------
   if (loading) {
     return (
       <ScrollView
@@ -123,19 +118,15 @@ export default function HomeScreen() {
       </ScrollView>
     );
   }
-
-  // ------------------------
-  // MAIN UI
-  // ------------------------
   return (
-     <ScrollView
+    <ScrollView
       className="flex-1 bg-background w-[100%] h-[100%]"
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#ac1e24"]} />
       }
     >
-     <View className="items-start gap-1 ml-4 mt-3">
+      <View className="items-start gap-1 ml-4 mt-3">
         <View className="flex-row items-center ml-2">
           <Text className="text-2xl">📍</Text>
           <Text className="text-xl font-bold text-primary ml-2">
@@ -170,9 +161,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="border-2" >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}  >
           {nearestStores.map((store) => (
-            <View key={store.id} style={{ width: '17.5%', marginRight: 16 }}>
+            <View key={store.id} style={{ width: cardWidth, marginRight: 16 }}>
               <StoreCard
                 {...store}
                 userLatitude={location.latitude}
@@ -194,7 +185,7 @@ export default function HomeScreen() {
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {popularStores.map((store) => (
-            <View key={store.id} style={{ width: 350, marginRight: 16 }}>
+            <View key={store.id} style={{ width: cardWidth, marginRight: 16 }}>
               {/* // <View key={store.id} className="mr-4 w-80 flex-shrink-0"> */}
               <StoreCard
                 {...store}
