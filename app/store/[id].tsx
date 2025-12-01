@@ -9,6 +9,7 @@ import { useLocation } from '../../contexts/LocationContext';
 import { getStoreById } from '../../services/api';
 import { Banner, Store } from '../../types/common';
 import { calculateDistance, getFormattedDistance } from '../../utils/location';
+import * as Clipboard from "expo-clipboard";
 
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -16,6 +17,7 @@ export default function StoreDetailScreen() {
   const [store, setStore] = useState<Store | null>(null);
   const [loading, setLoading] = useState(true);
   const [distance, setDistance] = useState<number | null>(null);
+  const [rideSheetVisible, setRideSheetVisible] = useState(false);
 
   useEffect(() => {
     loadStoreDetail();
@@ -52,6 +54,23 @@ export default function StoreDetailScreen() {
       Linking.openURL(url);
     }
   };
+  const copyStoreAddress = async (store: {
+  area_street: string;
+  district: string;
+  state: string;
+  pincode: string;
+}) => {
+  try {
+    const fullAddress = `${store.area_street}, ${store.district}, ${store.state} - ${store.pincode}`;
+
+    await Clipboard.setStringAsync(fullAddress);
+
+    Alert.alert("Copied!", "Store address has been copied to clipboard.");
+  } catch (error) {
+    console.log("Failed to copy address:", error);
+    Alert.alert("Error", "Could not copy the address.");
+  }
+};
 
   if (loading) {
     return (
@@ -69,17 +88,17 @@ export default function StoreDetailScreen() {
     );
   }
 
-const getMediaType = (file?: string | null): "image" | "video" => {
-  if (!file) return "image";
-  return file.match(/\.(mp4|mov|avi|webm)$/i) ? "video" : "image";
-};
+  const getMediaType = (file?: string | null): "image" | "video" => {
+    if (!file) return "image";
+    return file.match(/\.(mp4|mov|avi|webm)$/i) ? "video" : "image";
+  };
 
-const banners: Banner[] = [
-  store.file_1 ? { file: store.file_1, media_type: getMediaType(store.file_1) } : null,
-  store.file_2 ? { file: store.file_2, media_type: getMediaType(store.file_2) } : null,
-  store.file_3 ? { file: store.file_3, media_type: getMediaType(store.file_3) } : null,
-  store.file_4 ? { file: store.file_4, media_type: getMediaType(store.file_4) } : null,
-].filter((b): b is Banner => b !== null);
+  const banners: Banner[] = [
+    store.file_1 ? { file: store.file_1, media_type: getMediaType(store.file_1) } : null,
+    store.file_2 ? { file: store.file_2, media_type: getMediaType(store.file_2) } : null,
+    store.file_3 ? { file: store.file_3, media_type: getMediaType(store.file_3) } : null,
+    store.file_4 ? { file: store.file_4, media_type: getMediaType(store.file_4) } : null,
+  ].filter((b): b is Banner => b !== null);
 
 
   return (
@@ -89,7 +108,7 @@ const banners: Banner[] = [
       </View>
 
       <View className="w-full mx-auto h-[250px] rounded-full items-center justify-center mb-2">
-        <BannerCarousel banners={banners}/>
+        <BannerCarousel banners={banners} />
       </View>
 
       {distance && (
@@ -114,7 +133,10 @@ const banners: Banner[] = [
             </Text>
           </View>
 
-          <Button title="Get Directions" onPress={handleDirections} className="mt-4" />
+          <View className='flex gap-3'>
+            <Button title="Get Directions" onPress={handleDirections} className="mt-4" />
+            <Button title="Copy Store Address" onPress={() => copyStoreAddress(store)} outline />
+          </View>
         </View>
 
         {/* Contact Section */}
@@ -158,6 +180,7 @@ const banners: Banner[] = [
           </View>
         </View>
       </View>
+
     </ScrollView>
   );
 }

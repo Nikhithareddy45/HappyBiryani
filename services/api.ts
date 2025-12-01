@@ -41,17 +41,25 @@ export const getStoreById = async (id: number) => {
 
 export const sendContactUs = async (formData: ContactData) => {
   try {
+    const payload = {
+      name: formData.name,
+      phone_number: formData.phone,
+      email: formData.email,
+      description: formData.message,
+    };
+
     const response = await fetch(`${BASE_URL}/contact-us/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
-   
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      console.log("Error Body:", errorData);
+      throw new Error(errorData || `HTTP error! status: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error("Error submitting contact form:", error);
@@ -59,22 +67,32 @@ export const sendContactUs = async (formData: ContactData) => {
   }
 };
 
-export const reportIssue = async (formData: ContactData) => {
+
+export const reportIssue = async (formData: ContactData) =>  {
   try {
-    const response = await fetch(`${BASE_URL}/issue-report/`, {
+    const payload = {
+      name: formData.name,
+      phone_number: formData.phone,
+      email: formData.email,
+      description: formData.message,
+    };
+
+
+    const response =await fetch(`${BASE_URL}/issue-report/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
-   
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      console.log("Error Body:", errorData);
+      throw new Error(errorData || `HTTP error! status: ${response.status}`);
     }
-   
+
     return await response.json();
   } catch (error) {
-    console.error("Error submitting issue report:", error);
+    console.error("Error submitting contact form:", error);
     throw error;
   }
 };

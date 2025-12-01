@@ -1,12 +1,46 @@
 {
-  "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "f47a4a95-5490-433b-88f1-846da936a1ee"
+  "name": "HappyBiryani",
+  "slug": "happybiryani",
+  "icon": "./assets/images/logo.png",
+  "scheme": "happybiryani", 
+  "plugins": [
+    [
+      "expo-splash-screen",
+      {
+        "backgroundColor": "#ffffff",
+        "image": "./assets/images/logo.png",
+        "imageWidth": 200,
+        "resizeMode": "contain",
+        "dark": {
+          "backgroundColor": "#000000",
+          "image": "./assets/images/logo.png"
+        },
+        "android": {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/logo.png",
+          "imageWidth": 150
+        },
+        "ios": {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/logo.png",
+          "resizeMode": "contain"
+        }
       }
-    },
-    "android": {
-      "package": "com.happybiryani"
+    ]
+  ],
+  "android": {
+    "package": "com.happybiryani",
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/logo.png",
+      "backgroundColor": "#ffffff"
+    }
+  },
+  "ios": {
+    "bundleIdentifier": "com.happybiryani"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "f47a4a95-5490-433b-88f1-846da936a1ee"
     }
   }
 }

@@ -47,3 +47,4 @@ export interface StoreCardProps extends Store {
   userLatitude?: number|null;
   userLongitude?: number|null;
 }
+

@@ -129,7 +129,7 @@ export default function HomeScreen() {
   // ------------------------
   return (
      <ScrollView
-      className="flex-1 bg-background"
+      className="flex-1 bg-background w-[100%] h-[100%]"
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#ac1e24"]} />
@@ -170,9 +170,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="border-2" >
           {nearestStores.map((store) => (
-            <View key={store.id} style={{ width: 350, marginRight: 16 }}>
+            <View key={store.id} style={{ width: '17.5%', marginRight: 16 }}>
               <StoreCard
                 {...store}
                 userLatitude={location.latitude}

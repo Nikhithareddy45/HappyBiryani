@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type LocationState = {
   latitude: number | null;
@@ -19,6 +20,38 @@ export const LocationProvider = ({ children }: any) => {
   });
 
   // --------------------------------------------------
+  // LOAD CACHED LOCATION ON START
+  // --------------------------------------------------
+  useEffect(() => {
+    loadStoredLocation();
+  }, []);
+
+  const loadStoredLocation = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("USER_LOCATION");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setLocation({
+          latitude: parsed.latitude,
+          longitude: parsed.longitude,
+          hasPermission: parsed.hasPermission,
+          isLoading: false,
+        });
+      }
+    } catch (err) {
+      console.log("Error loading cached location:", err);
+    }
+  };
+
+  const saveLocation = async (data: LocationState) => {
+    try {
+      await AsyncStorage.setItem("USER_LOCATION", JSON.stringify(data));
+    } catch (err) {
+      console.log("Error saving location:", err);
+    }
+  };
+
+  // --------------------------------------------------
   // USER PRESSES "ALLOW LOCATION"
   // --------------------------------------------------
   const requestLocation = async () => {
@@ -28,52 +61,62 @@ export const LocationProvider = ({ children }: any) => {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
-        // User denied permission
-        setLocation((prev) => ({
-          ...prev,
+        const updated = {
+          latitude: null,
+          longitude: null,
           hasPermission: false,
           isLoading: false,
-        }));
+        };
+        setLocation(updated);
+        await saveLocation(updated);
         return false;
       }
 
-      // Try to get location
       const pos = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
 
-      setLocation({
+      const updated = {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
         hasPermission: true,
         isLoading: false,
-      });
+      };
+
+      setLocation(updated);
+      await saveLocation(updated);
 
       return true;
     } catch (err: any) {
       console.log("Error requesting location:", err.message);
 
-      // Some devices throw "unsatisfied device settings" (GPS OFF)
-      setLocation((prev) => ({
-        ...prev,
+      const updated = {
+        latitude: null,
+        longitude: null,
         hasPermission: false,
         isLoading: false,
-      }));
+      };
+
+      setLocation(updated);
+      await saveLocation(updated);
 
       return false;
     }
   };
 
   // --------------------------------------------------
-  // USER PRESSES "SKIP" → NO PERMISSION
+  // USER PRESSES "SKIP"
   // --------------------------------------------------
   const skipLocation = async () => {
-    setLocation({
+    const updated = {
       latitude: null,
       longitude: null,
       hasPermission: false,
       isLoading: false,
-    });
+    };
+
+    setLocation(updated);
+    await saveLocation(updated);
   };
 
   return (

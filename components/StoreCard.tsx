@@ -36,7 +36,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({
   return (
     <TouchableOpacity
       onPress={() => router.push(`../store/${id}`)}
-      className="bg-white rounded-xl shadow-sm mr-4 w-[100%]"
+      className="relative bg-white rounded-xl shadow-sm mr-4 w-[100%]"
     >
       <Image
         source={{ uri: file_1 }}
@@ -54,7 +54,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({
 
       <TouchableOpacity
         onPress={handleNavigateToLocation}
-        className="absolute top-3 right-3 bg-white bg-opacity-90 p-2 rounded-full shadow-sm"
+        className="absolute top-3 right-4 bg-white bg-opacity-90 p-2 rounded-full shadow-sm"
       >
         <Text className="text-secondary text-lg">🧭</Text>
       </TouchableOpacity>

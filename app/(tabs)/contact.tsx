@@ -13,8 +13,8 @@ export default function ContactScreen() {
   const router = useRouter();
   const [formData, setFormData] = useState<ContactData>({
     name: '',
-    email: '',
     phone: '',
+    email: '',
     message: ''
   });
   const [errors, setErrors] = useState<Partial<ContactData>>({});
@@ -84,15 +84,6 @@ export default function ContactScreen() {
             error={errors.name}
           />
 
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            value={formData.email}
-            onChangeText={(text) => setFormData({ ...formData, email: text })}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-          />
 
           <Input
             label="Phone"
@@ -103,6 +94,17 @@ export default function ContactScreen() {
             maxLength={10}
             error={errors.phone}
           />
+
+          <Input
+            label="Email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
+          />
+
 
           <TextArea
             label="Message"
