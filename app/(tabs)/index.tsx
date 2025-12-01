@@ -26,9 +26,6 @@ export default function HomeScreen() {
 
   const [address, setAddress] = useState("");
 
-  // ------------------------
-  // GET USER ADDRESS
-  // ------------------------
   useEffect(() => {
     if (location.latitude && location.longitude) {
       getAddressFromCoords();

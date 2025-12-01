@@ -1,63 +1,68 @@
-import React, { useState } from 'react';
-import { View, Text, Image } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Button } from '@/components/ui/Button';
-import { requestLocationPermission } from '../utils/location';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Image, Text, View } from 'react-native';
+import { useLocation } from '../contexts/LocationContext';
 
 export default function LocationPermissionScreen() {
   const router = useRouter();
+  const { location, requestLocation, skipLocation } = useLocation();
+
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (location.isGranted || location.hasPermission || location.skipped) {
+      router.replace("/(tabs)");
+    }
+  }, [location.isGranted, location.hasPermission, location.skipped, router]);
 
   const handleAllowLocation = async () => {
     setLoading(true);
-    const result = await requestLocationPermission();
-    
-    if (result.granted && result.location) {
-      await AsyncStorage.setItem('hasLocationPermission', 'true');
-      await AsyncStorage.setItem('userLocation', JSON.stringify(result.location));
-    }
-    
+
+    await requestLocation();
+
     setLoading(false);
+
     router.replace('/(tabs)');
   };
 
   const handleSkip = async () => {
-    await AsyncStorage.setItem('hasLocationPermission', 'false');
+    await skipLocation();
     router.replace('/(tabs)');
   };
 
   return (
     <View className="flex-1 bg-background justify-center items-center px-6">
-      <View className="w-32 h-32 bg-primary rounded-full items-center justify-center mb-6">
-        <Text className="text-6xl">🏪</Text>
+      <View className="items-center mb-4">
+        <Text className="text-3xl font-bold text-primary mb-2">HappyBiryani</Text>
+        <Text className="text-gray-500 text-center mb-4">
+          The joy of good food
+        </Text>
       </View>
 
-      <Text className="text-3xl font-bold text-primary mb-2">HappyBiryani</Text>
-      <Text className="text-gray-500 text-center mb-12">
-        Delicious biryani delivered to you
-      </Text>
+      <View className="w-[90%] h-[50%] rounded-full items-center justify-center mb-6">
+        <Image source={require('../assets/images/image.jpg')} className="w-full h-full rounded-xl" />
+      </View>
 
       <View className="items-center mb-8">
-        <Text className="text-5xl mb-4">📍</Text>
-        <Text className="text-2xl font-bold text-gray-800 mb-3">Enable Location</Text>
-        <Text className="text-center text-gray-600 leading-6">
-          Allow location access to find the nearest HappyBiryani stores and get personalized recommendations.
-        </Text>
+        <View className="flex-row items-center mb-4">
+          <Text className="text-3xl">📍</Text>
+          <Text className="text-2xl font-bold text-gray-800">Enable Location</Text>
+        </View>
       </View>
 
       <Button
         title="Allow Location"
         onPress={handleAllowLocation}
         loading={loading}
-        className="w-full mb-4"
+        className="w-[90%] mb-4"
       />
 
       <Button
         title="Skip for now"
         outline
         onPress={handleSkip}
-        className="w-full"
+        className="w-[90%]"
       />
     </View>
   );

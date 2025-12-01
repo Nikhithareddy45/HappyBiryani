@@ -1,132 +1,157 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { 
+  PropsWithChildren, 
+  createContext, 
+  useContext, 
+  useEffect, 
+  useState 
+} from "react";
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type LocationState = {
   latitude: number | null;
   longitude: number | null;
-  hasPermission: boolean;
-  isLoading: boolean;
+  hasPermission: boolean; // true if we currently have a usable location in-memory
+  isGranted: boolean; // stored user preference — 'asked and granted'
+  skipped: boolean; // user explicitly skipped location
+  isInitializing: boolean; // true while reading AsyncStorage
 };
 
 const LocationContext = createContext<any>(null);
 
-export const LocationProvider = ({ children }: any) => {
+export const LocationProvider = ({ children }: PropsWithChildren) => {
   const [location, setLocation] = useState<LocationState>({
     latitude: null,
     longitude: null,
     hasPermission: false,
-    isLoading: false,
+    isGranted: false,
+    skipped: false,
+    isInitializing: true,
   });
 
-  // --------------------------------------------------
-  // LOAD CACHED LOCATION ON START
-  // --------------------------------------------------
   useEffect(() => {
-    loadStoredLocation();
+    initializeLocation();
   }, []);
 
-  const loadStoredLocation = async () => {
+  const initializeLocation = async () => {
     try {
-      const stored = await AsyncStorage.getItem("USER_LOCATION");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setLocation({
-          latitude: parsed.latitude,
-          longitude: parsed.longitude,
-          hasPermission: parsed.hasPermission,
-          isLoading: false,
-        });
+      const [storedIsGranted, storedSkipped, storedUserLocation] = await Promise.all([
+        AsyncStorage.getItem("isGranted"),
+        AsyncStorage.getItem("skippedLocation"),
+        AsyncStorage.getItem("USER_LOCATION"),
+      ]);
+
+      const storedIsGrantedBool = storedIsGranted === "true";
+      const storedSkippedBool = storedSkipped === "true";
+
+      // set initial state from cache without triggering prompts
+      setLocation((prev) => ({
+        ...prev,
+        latitude: storedUserLocation ? JSON.parse(storedUserLocation).latitude : prev.latitude,
+        longitude: storedUserLocation ? JSON.parse(storedUserLocation).longitude : prev.longitude,
+        isGranted: storedIsGrantedBool,
+        skipped: storedSkippedBool,
+        hasPermission: storedIsGrantedBool && !!storedUserLocation,
+      }));
+
+      // if stored 'granted', attempt to refresh the current location silently (no prompt)
+      if (storedIsGrantedBool) {
+        try {
+          const { status } = await Location.getForegroundPermissionsAsync();
+          if (status === "granted") {
+            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
+            const updated = {
+              latitude: loc.coords.latitude,
+              longitude: loc.coords.longitude,
+              hasPermission: true,
+              isGranted: true,
+              skipped: false,
+              isInitializing: false,
+            } as LocationState;
+            setLocation(updated);
+            await AsyncStorage.setItem("USER_LOCATION", JSON.stringify({ latitude: updated.latitude, longitude: updated.longitude }));
+          } else {
+            // OS permission no longer granted - clear stored isGranted and stored location
+            await AsyncStorage.removeItem("isGranted");
+            await AsyncStorage.removeItem("USER_LOCATION");
+            setLocation((prev) => ({ ...prev, latitude: null, longitude: null, hasPermission: false, isGranted: false, isInitializing: false }));
+          }
+        } catch (err) {
+          console.log("Error refreshing location from cache:", err);
+          // don't fail initialization; we'll keep cached state where possible
+        }
       }
     } catch (err) {
-      console.log("Error loading cached location:", err);
+      console.log("Error initializing location from storage:", err);
+    } finally {
+      // always mark initialization finished
+      setLocation((prev) => ({ ...prev, isInitializing: false }));
     }
   };
 
-  const saveLocation = async (data: LocationState) => {
-    try {
-      await AsyncStorage.setItem("USER_LOCATION", JSON.stringify(data));
-    } catch (err) {
-      console.log("Error saving location:", err);
-    }
-  };
-
-  // --------------------------------------------------
-  // USER PRESSES "ALLOW LOCATION"
-  // --------------------------------------------------
   const requestLocation = async () => {
     try {
-      setLocation((prev) => ({ ...prev, isLoading: true }));
+      // Check OS-level permission without showing the prompt
+      const currentPerm = await Location.getForegroundPermissionsAsync();
 
-      const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
+      // If the OS already grants, just grab location silently
+      if (currentPerm.status === "granted") {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
         const updated = {
-          latitude: null,
-          longitude: null,
-          hasPermission: false,
-          isLoading: false,
-        };
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+          hasPermission: true,
+          isGranted: true,
+          skipped: false,
+          isInitializing: false,
+        } as LocationState;
         setLocation(updated);
-        await saveLocation(updated);
+        await AsyncStorage.setItem("isGranted", "true");
+        await AsyncStorage.setItem("USER_LOCATION", JSON.stringify({ latitude: updated.latitude, longitude: updated.longitude }));
+        return true;
+      }
+
+      // If we don't have OS permission, request it which may show a prompt
+      const request = await Location.requestForegroundPermissionsAsync();
+      if (request.status !== "granted") {
+        // user denied: ensure we clear cached values
+        await AsyncStorage.removeItem("isGranted");
+        await AsyncStorage.removeItem("USER_LOCATION");
+        setLocation((prev) => ({ ...prev, latitude: null, longitude: null, hasPermission: false, isGranted: false }));
         return false;
       }
 
-      const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
+      // permission granted via request, fetch location
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
       const updated = {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
         hasPermission: true,
-        isLoading: false,
-      };
-
+        isGranted: true,
+        skipped: false,
+        isInitializing: false,
+      } as LocationState;
       setLocation(updated);
-      await saveLocation(updated);
-
+      await AsyncStorage.setItem("isGranted", "true");
+      await AsyncStorage.setItem("USER_LOCATION", JSON.stringify({ latitude: updated.latitude, longitude: updated.longitude }));
       return true;
-    } catch (err: any) {
-      console.log("Error requesting location:", err.message);
 
-      const updated = {
-        latitude: null,
-        longitude: null,
-        hasPermission: false,
-        isLoading: false,
-      };
-
-      setLocation(updated);
-      await saveLocation(updated);
-
-      return false;
+    } catch (error) {
+      console.log("Location Fetch Error:", error);
     }
   };
 
-  // --------------------------------------------------
-  // USER PRESSES "SKIP"
-  // --------------------------------------------------
   const skipLocation = async () => {
-    const updated = {
-      latitude: null,
-      longitude: null,
-      hasPermission: false,
-      isLoading: false,
-    };
-
-    setLocation(updated);
-    await saveLocation(updated);
+    try {
+      await AsyncStorage.setItem("skippedLocation", "true");
+    } catch (err) {
+      console.log("Error saving skippedLocation:", err);
+    }
+    setLocation((prev) => ({ ...prev, skipped: true, isGranted: false }));
   };
 
   return (
-    <LocationContext.Provider
-      value={{
-        location,
-        requestLocation,
-        skipLocation,
-      }}
-    >
+    <LocationContext.Provider value={{ location, requestLocation, skipLocation }}>
       {children}
     </LocationContext.Provider>
   );

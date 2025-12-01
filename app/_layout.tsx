@@ -1,5 +1,5 @@
 import SafeArea from "@/components/ui/SafeArea";
-import { LocationProvider } from "@/contexts/LocationContext";
+import { LocationProvider, useLocation } from "@/contexts/LocationContext";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -18,11 +18,19 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontError) throw fontError;
+  }, [fontError]);
 
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+  // This component ensures the splash stays visible until fonts are loaded
+  // and our LocationContext finishes initialization (so index screen doesn't flash briefly)
+  function SplashManager({ fontsLoaded }: { fontsLoaded: boolean }) {
+    const { location } = useLocation();
+    useEffect(() => {
+      if (fontsLoaded && !location.isInitializing) {
+        SplashScreen.hideAsync();
+      }
+    }, [fontsLoaded, location.isInitializing]);
+    return null;
+  }
 
   if (!fontsLoaded && !fontError) {
     return null;
@@ -30,6 +38,7 @@ export default function RootLayout() {
   return (
     <LocationProvider>
       <SafeArea>
+        <SplashManager fontsLoaded={fontsLoaded} />
      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
