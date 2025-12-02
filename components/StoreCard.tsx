@@ -21,7 +21,8 @@ export const StoreCard: React.FC<StoreCardProps> = ({
 }) => {
   const router = useRouter();
 
-  const distance = userLatitude && userLongitude
+  const distance =
+  userLatitude && userLongitude
     ? calculateDistance(userLatitude, userLongitude, latitude, longitude)
     : null;
   const handleNavigateToLocation = async () => {

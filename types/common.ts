@@ -48,3 +48,16 @@ export interface StoreCardProps extends Store {
   userLongitude?: number|null;
 }
 
+export type LocationState = {
+  latitude: number | null;
+  longitude: number | null;
+  isGranted: boolean;      // user has granted location before
+  skipped: boolean;        // user chose "skip for now"
+  isInitializing: boolean; // still reading from storage
+};
+
+export type LocationContextValue = {
+  location: LocationState;
+  requestLocation: () => Promise<boolean | void>;
+  skipLocation: () => Promise<void>;
+};

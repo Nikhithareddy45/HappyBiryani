@@ -1,8 +1,14 @@
+// app/(tabs)/stores.tsx
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, RefreshControl } from "react-native";
-import { useLocation } from "@/contexts/LocationContext";
-import { BackButton } from '@/components/ui/BackButton';
+import {
+  View,
+  Text,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 
+import { useLocation } from "@/contexts/LocationContext";
+import { BackButton } from "@/components/ui/BackButton";
 import { StoreCard } from "@/components/StoreCard";
 import { StoreDetailSkeleton } from "@/components/ui/SkeletonLoader";
 
@@ -19,8 +25,7 @@ export default function StoresScreen() {
 
   useEffect(() => {
     loadStores();
-  }, [location.latitude, location.longitude]);
-
+  }, [location.isGranted, location.latitude, location.longitude]);
   const loadStores = async () => {
     try {
       setLoading(true);
@@ -29,14 +34,12 @@ export default function StoresScreen() {
 
       if (storesData?.length) {
         const finalStores =
-          location.hasPermission &&
-            location.latitude &&
-            location.longitude
+          location.isGranted && location.latitude && location.longitude
             ? sortStoresByDistance(
-              storesData,
-              location.latitude,
-              location.longitude
-            )
+                storesData,
+                location.latitude,
+                location.longitude
+              )
             : shuffleArray(storesData);
 
         setStores(finalStores);
@@ -68,10 +71,13 @@ export default function StoresScreen() {
       <View className="p-4 pb-20">
         <View className="items-center gap-2 flex-row">
           <BackButton />
-          <Text className="text-2xl font-bold text-primary mb-2 ">All Stores</Text>
+          <Text className="text-2xl font-bold text-primary mb-2">
+            All Stores
+          </Text>
         </View>
+
         <Text className="text-sm text-gray-600 mb-6">
-          {location.hasPermission
+          {location.isGranted
             ? "Showing stores nearest to farthest"
             : "Location off — showing random stores"}
         </Text>

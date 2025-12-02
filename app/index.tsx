@@ -1,7 +1,8 @@
+// app/index.tsx
 import { useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
-import { useLocation } from "../contexts/LocationContext";
+import { useLocation } from "@/contexts/LocationContext";
 
 export default function Index() {
   const router = useRouter();
@@ -17,11 +18,9 @@ export default function Index() {
     }
   }, [location.isInitializing, location.isGranted, location.skipped, router]);
 
-  if (location.isInitializing) return null;
-
   return (
-    <View className="flex-1 justify-center items-center">
-      <ActivityIndicator size="large" />
+    <View className="flex-1 items-center justify-center">
+      <ActivityIndicator />
     </View>
   );
 }

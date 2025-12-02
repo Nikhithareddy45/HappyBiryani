@@ -1,34 +1,34 @@
-import { Button } from '@/components/ui/Button';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Image, Text, View } from 'react-native';
-import { useLocation } from '../contexts/LocationContext';
+
+import { Button } from "@/components/ui/Button";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Image, Text, View } from "react-native";
+import { useLocation } from "@/contexts/LocationContext";
 
 export default function LocationPermissionScreen() {
   const router = useRouter();
   const { location, requestLocation, skipLocation } = useLocation();
-
   const [loading, setLoading] = useState(false);
 
+  // If user has already decided (granted or skipped), skip this screen
   useEffect(() => {
-    if (location.isGranted || location.hasPermission || location.skipped) {
+    if (location.isGranted || location.skipped) {
       router.replace("/(tabs)");
     }
-  }, [location.isGranted, location.hasPermission, location.skipped, router]);
+  }, [location.isGranted, location.skipped, router]);
 
   const handleAllowLocation = async () => {
     setLoading(true);
-
-    await requestLocation();
-
+    const ok = await requestLocation();
     setLoading(false);
-
-    router.replace('/(tabs)');
+    if (ok) {
+      router.replace("/(tabs)");
+    }
   };
 
   const handleSkip = async () => {
     await skipLocation();
-    router.replace('/(tabs)');
+    router.replace("/(tabs)");
   };
 
   return (
@@ -41,16 +41,24 @@ export default function LocationPermissionScreen() {
       </View>
 
       <View className="w-[90%] h-[50%] rounded-full items-center justify-center mb-6">
-        <Image source={require('../assets/images/image.jpg')} className="w-full h-full rounded-xl" />
+        <Image
+          source={require("../assets/images/image.jpg")}
+          className="w-full h-full rounded-xl"
+        />
       </View>
 
       <View className="items-center mb-8">
         <View className="flex-row items-center mb-2">
           <Text className="text-3xl">📍</Text>
-          <Text className="text-2xl font-bold text-gray-800">Enable Location</Text>
+          <Text className="text-2xl font-bold text-gray-800">
+            Enable Location
+          </Text>
         </View>
-      <Text className="text-md text-gray-800 text-center">Allow location access to find the nearest HappyBiryani Stores</Text>
+        <Text className="text-md text-gray-800 text-center">
+          Allow location access to find the nearest HappyBiryani stores
+        </Text>
       </View>
+
       <Button
         title="Allow Location"
         onPress={handleAllowLocation}

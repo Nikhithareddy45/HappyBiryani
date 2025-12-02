@@ -39,26 +39,26 @@ export default function RootLayout() {
     <LocationProvider>
       <SafeArea>
         <SplashManager fontsLoaded={fontsLoaded} />
-     <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen 
-          name="reportIssue" 
-          options={{ 
-            presentation: 'modal',
-            title: 'Report Issue',
-            headerShown: false,
-          }} 
-        />
-        <Stack.Screen 
-          name="store/[id]" 
-          options={{ 
-            presentation: 'modal',
-            title: 'Store Details',
-            headerShown: false,
-          }} 
-        />
-      </Stack>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="reportIssue"
+            options={{
+              presentation: 'modal',
+              title: 'Report Issue',
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="store/[id]"
+            options={{
+              presentation: 'modal',
+              title: 'Store Details',
+              headerShown: false,
+            }}
+          />
+        </Stack>
       </SafeArea>
     </LocationProvider>
   )
